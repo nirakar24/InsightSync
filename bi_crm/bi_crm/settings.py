@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,8 +25,16 @@ SECRET_KEY = 'django-insecure-pfc00fyqkf4@yhn=cttn4ae2c)i85ihwmvt9=f0qi%dn1r@o*5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.gitpod.io",
+]
 
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "8000-nirakar24-insightsync-93fw9go2tjz.ws-us117.gitpod.io",
+    os.getenv("https://8000-nirakar24-insightsync-93fw9go2tjz.ws-us117.gitpod.io", "").replace("https://", ""),
+]
 
 # Application definition
 

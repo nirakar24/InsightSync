@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import Customer, Product, Order
-from .ml_models import predict_churn, forecast_sales, recommend_products, get_pricing_trends
+from .ml_models import predict_and_update_churn, forecast_sales, recommend_products, get_pricing_trends
 
 # Dashboard View
 def dashboard(request):

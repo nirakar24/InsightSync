@@ -1,4 +1,5 @@
 from django.db import models
+import random
 
 # -----------------------------
 # Customer & Segmentation
@@ -23,15 +24,27 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    registration_date = models.DateField(auto_now_add=True)
+    registration_date = models.DateField(blank=True, null=True)
     last_purchase_date = models.DateField(blank=True, null=True)
     # A predicted churn score between 0 and 1 (can be updated via ML predictions)
     churn_score = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
     # Link to a segmentation category
     segment = models.ForeignKey(CustomerSegment, on_delete=models.SET_NULL, blank=True, null=True, related_name='customers')
     
+     # New field: Spending Factor
+    spending_factor = models.DecimalField(
+        max_digits=4, decimal_places=2, blank=True, null=True, 
+        help_text="Random spending factor (0.5 - 1.5) assigned at creation."
+    )
+
+    def save(self, *args, **kwargs):
+        """Assign a random spending factor only if it's not set."""
+        if self.spending_factor is None:
+            self.spending_factor = round(random.uniform(0.5, 1.5), 2)
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.first_name} {self.last_name} (Spending Factor: {self.spending_factor})"
 
 # -----------------------------
 # Product & Pricing
