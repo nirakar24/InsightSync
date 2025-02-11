@@ -1,0 +1,9 @@
+{% extends "crm/base.html" %}
+{% block title %}Customer Details{% endblock %}
+
+{% block content %}
+    <h1>{{ customer.first_name }} {{ customer.last_name }}</h1>
+    <p><strong>Email:</strong> {{ customer.email }}</p>
+    <p><strong>Segment:</strong> {{ customer.segment }}</p>
+    <p><strong>Churn Score:</strong> {{ customer.churn_score }}</p>
+{% endblock %}
