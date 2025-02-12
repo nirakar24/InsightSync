@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from .models import Customer
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 # --------------------------
 # Generate Initial Churn Scores
@@ -77,12 +78,34 @@ def train_churn_model():
     model.fit(X_train_scaled, y_train)
 
     print("✅ Churn model trained successfully.")
-    return model, scaler
+    return model, scaler, X_test_scaled, y_test
 
 # Train the model initially
-churn_model, churn_scaler = train_churn_model()
+churn_model, churn_scaler, X_test_scaled, y_test = train_churn_model()
 
+def evaluate_churn_model(model, X_test_scaled, y_test):
+    # Get predictions and predicted probabilities
+    y_pred = model.predict(X_test_scaled)
+    y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
 
+    # Calculate metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, zero_division=0)
+    recall = recall_score(y_test, y_pred, zero_division=0)
+    f1 = f1_score(y_test, y_pred, zero_division=0)
+    roc_auc = roc_auc_score(y_test, y_pred_proba)
+
+    # Print evaluation metrics
+    print("Model Evaluation Metrics:")
+    print(f"Accuracy  : {accuracy:.4f}")
+    print(f"Precision : {precision:.4f}")
+    print(f"Recall    : {recall:.4f}")
+    print(f"F1 Score  : {f1:.4f}")
+    print(f"ROC-AUC   : {roc_auc:.4f}")
+
+# Evaluate the model if the training was successful
+if churn_model:
+    evaluate_churn_model(churn_model, X_test_scaled, y_test)
 
 def predict_and_update_churn():
     """
