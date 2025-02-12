@@ -51,20 +51,67 @@ class Customer(models.Model):
 # -----------------------------
 class Product(models.Model):
     """
-    Represents a product available for sale. Used in product recommendations,
-    sales analysis, and dynamic pricing insights.
+    Represents a product available for sale. Stores detailed information scraped from Amazon.
     """
-    name = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField(blank=True, null=True)
-    # Average rating computed from reviews
-    rating = models.FloatField(blank=True, null=True)
-    # Available inventory count
-    inventory = models.PositiveIntegerField(default=0)
+    # Basic Product Info
+    name = models.CharField(max_length=200)
+    asin = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Amazon identifier
+    category = models.CharField(max_length=100, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    original_price = models.CharField(max_length=50, blank=True, null=True)  # Often includes currency symbols
+    currency = models.CharField(max_length=10, blank=True, null=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
     
+    # Product Details and Description
+    description = models.TextField(blank=True, null=True)
+    product_byline = models.CharField(max_length=200, blank=True, null=True)
+    product_byline_link = models.URLField(blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)
+    product_num_ratings = models.PositiveIntegerField(null=True, blank=True)
+    product_url = models.URLField(blank=True, null=True)
+    product_photo = models.URLField(blank=True, null=True)
+    product_num_offers = models.PositiveIntegerField(null=True, blank=True)
+    product_availability = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Flags from Amazon
+    is_best_seller = models.BooleanField(default=False)
+    is_amazon_choice = models.BooleanField(default=False)
+    is_prime = models.BooleanField(default=False)
+    climate_pledge_friendly = models.BooleanField(default=False)
+    
+    # Sales and Review Info
+    sales_volume = models.CharField(max_length=50, blank=True, null=True)  # e.g., "400+ bought in past month"
+    customers_say = models.TextField(blank=True, null=True)
+    
+    # Detailed Product Information stored as JSON
+    product_information = models.JSONField(blank=True, null=True)  # e.g., dimensions, manufacturer, etc.
+    product_details = models.JSONField(blank=True, null=True)      # Additional details like material, closure type, etc.
+    
+    # Media Assets
+    product_photos = models.JSONField(blank=True, null=True)  # List of photo URLs
+    product_videos = models.JSONField(blank=True, null=True)  # List of video dictionaries
+    video_thumbnail = models.URLField(blank=True, null=True)
+    has_video = models.BooleanField(default=False)
+    
+    # Delivery Information
+    delivery = models.TextField(blank=True, null=True)
+    primary_delivery_time = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Category & Variations
+    category_path = models.JSONField(blank=True, null=True)      # List of category dictionaries
+    product_variations = models.JSONField(blank=True, null=True)   # Variation details (size, color, etc.)
+    
+    # Deal & Brand Info
+    deal_badge = models.CharField(max_length=100, blank=True, null=True)
+    has_aplus = models.BooleanField(default=False)
+    has_brandstory = models.BooleanField(default=False)
+    
+    # Additional Info (if any)
+    more_info = models.JSONField(blank=True, null=True)
+
     def __str__(self):
         return self.name
+
 
 class PriceHistory(models.Model):
     """
@@ -155,13 +202,11 @@ class ChurnPrediction(models.Model):
         return f"Churn prediction for {self.customer} on {self.prediction_date}"
 
 class SalesForecast(models.Model):
-    """
-    Records forecasted sales data over a given period.
-    """
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sales_forecasts")
     forecast_date = models.DateField(help_text="Date for which the sales forecast applies")
     predicted_sales = models.DecimalField(max_digits=12, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
     period = models.CharField(max_length=20, help_text="Forecast period (e.g., Daily, Weekly, Monthly)")
-    
+
     def __str__(self):
-        return f"Forecast for {self.forecast_date} ({self.period})"
+        return f"Forecast for {self.product.name} on {self.forecast_date}: {self.predicted_sales}"

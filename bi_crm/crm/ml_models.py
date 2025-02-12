@@ -2,6 +2,8 @@ import random
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
+import re
+from textblob import TextBlob
 from django.utils.timezone import now
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -108,15 +110,123 @@ def predict_and_update_churn():
 # --------------------------
 # Sales Forecasting Model (Placeholder)
 # --------------------------
-def forecast_sales():
+def forecast_sales_for_product(product):
     """
-    Returns a random predicted sales figure for the next period.
+    Generates a sales forecast for a given product using its scraped data.
+    The forecast is based on:
+      - Extracting a base sales figure from the 'sales_volume' string.
+      - Analyzing customer review sentiment from 'customers_say'.
+      - Adjusting the base sales with a sentiment-based multiplier.
+    
+    Parameters:
+        product (Product): A Product model instance.
+    
+    Returns:
+        dict: Contains the base sales, sentiment polarity, and forecasted sales.
     """
-    predicted_sales = round(random.uniform(5000, 20000), 2)
+    # --- Extract base sales from the "sales_volume" field ---
+    sales_volume_str = product.sales_volume if product.sales_volume else ""
+    # Use regex to extract the first number from the sales_volume string.
+    numbers = re.findall(r'\d+', sales_volume_str)
+    base_sales = int(numbers[0]) if numbers else 0
+
+    # --- Sentiment Analysis on Customer Reviews ---
+    review_text = product.customers_say if product.customers_say else ""
+    polarity = 0.0
+    if review_text:
+        sentiment = TextBlob(review_text).sentiment
+        polarity = sentiment.polarity  # Ranges from -1 (negative) to 1 (positive)
+
+    # --- Forecast Calculation ---
+    # For demonstration, assume the base forecast is the base_sales.
+    # Adjust the forecast with sentiment: for example, each 0.1 positive polarity adds 5% to the forecast.
+    # Here we use a multiplier of 0.5 for polarity adjustment.
+    sentiment_adjustment_factor = 1 + (polarity * 0.5)
+    forecasted_sales = base_sales * sentiment_adjustment_factor
+
     return {
-        "date": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
-        "predicted_sales": predicted_sales
+        "base_sales": base_sales,
+        "sentiment_polarity": polarity,
+        "forecasted_sales": forecasted_sales
     }
+
+def forecast_sales_for_product(product):
+    """
+    Generates a sales forecast for a given product using its scraped data.
+    The forecast is based on:
+      - Extracting a base sales figure from the 'sales_volume' string.
+      - Analyzing customer review sentiment from 'customers_say'.
+      - Adjusting the base sales with a sentiment-based multiplier.
+    
+    Parameters:
+        product (Product): A Product model instance.
+    
+    Returns:
+        dict: Contains the base sales, sentiment polarity, and forecasted sales.
+    """
+    # --- Extract base sales from the "sales_volume" field ---
+    sales_volume_str = product.sales_volume if product.sales_volume else ""
+    # Use regex to extract numeric parts
+    numbers = re.findall(r'\d+', sales_volume_str)
+    if numbers:
+        base_sales = int(numbers[0])
+        sales_volume_upper = sales_volume_str.upper()
+        # Check for shorthand notation: "K" indicates thousands, "M" indicates millions.
+        if "K" in sales_volume_upper:
+            base_sales *= 1000
+        elif "M" in sales_volume_upper:
+            base_sales *= 1000000
+    else:
+        base_sales = 0
+
+    # --- Sentiment Analysis on Customer Reviews ---
+    review_text = product.customers_say if product.customers_say else ""
+    polarity = 0.0
+    if review_text:
+        sentiment = TextBlob(review_text).sentiment
+        polarity = sentiment.polarity  # Ranges from -1 (negative) to 1 (positive)
+
+    # --- Forecast Calculation ---
+    # For demonstration, assume the base forecast is the base_sales.
+    # Adjust the forecast with sentiment: for example, each 0.1 positive polarity might add 5% to the forecast.
+    # Here we use a multiplier of 0.5 for polarity adjustment.
+    sentiment_adjustment_factor = 1 + (polarity * 0.5)
+    forecasted_sales = base_sales * sentiment_adjustment_factor
+
+    return {
+        "base_sales": base_sales,
+        "sentiment_polarity": polarity,
+        "forecasted_sales": forecasted_sales
+    }
+
+def forecast_and_store_sales():
+    """
+    Iterates over all products, computes a sales forecast for each,
+    and stores the forecast result in the SalesForecast model.
+    """
+    products = Product.objects.all()
+    # Define the forecast date; you might choose the next month or a specific period.
+    forecast_date = timezone.now().date()  
+    period = "Monthly"  # or "Weekly", etc.
+
+    for product in products:
+        forecast_data = forecast_sales_for_product(product)
+        predicted_sales = forecast_data["forecasted_sales"]
+
+        # Create or update the SalesForecast record for this product and forecast date.
+        forecast_record, created = SalesForecast.objects.update_or_create(
+            product=product,
+            forecast_date=forecast_date,
+            period=period,
+            defaults={"predicted_sales": predicted_sales}
+        )
+
+        print(
+            f"Forecast for {product.name}: Base Sales = {forecast_data['base_sales']}, "
+            f"Polarity = {forecast_data['sentiment_polarity']}, Predicted Sales = {predicted_sales}"
+        )
+
+    return "Sales forecast updated for all products."
 
 # --------------------------
 # Product Recommendation Model (Placeholder)

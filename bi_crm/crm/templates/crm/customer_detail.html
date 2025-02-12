@@ -2,8 +2,18 @@
 {% block title %}Customer Details{% endblock %}
 
 {% block content %}
-    <h1>{{ customer.first_name }} {{ customer.last_name }}</h1>
+<div class="top-bar">
+  <div class="greeting">Customer Details</div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <h4>{{ customer.first_name }} {{ customer.last_name }}</h4>
     <p><strong>Email:</strong> {{ customer.email }}</p>
-    <p><strong>Segment:</strong> {{ customer.segment }}</p>
-    <p><strong>Churn Score:</strong> {{ customer.churn_score }}</p>
+    <p><strong>Company:</strong> {{ customer.company }}</p>
+    <p><strong>Phone:</strong> {{ customer.phone }}</p>
+    <p><strong>Country:</strong> {{ customer.country }}</p>
+    <p><strong>Status:</strong> {{ customer.status }}</p>
+  </div>
+</div>
 {% endblock %}
