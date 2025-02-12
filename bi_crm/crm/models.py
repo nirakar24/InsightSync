@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 import random
 
 # -----------------------------
@@ -201,12 +202,36 @@ class ChurnPrediction(models.Model):
     def __str__(self):
         return f"Churn prediction for {self.customer} on {self.prediction_date}"
 
+# class SalesForecast(models.Model):
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sales_forecasts")
+#     forecast_date = models.DateField(help_text="Date for which the sales forecast applies")
+#     predicted_sales = models.DecimalField(max_digits=12, decimal_places=2)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     period = models.CharField(max_length=20, help_text="Forecast period (e.g., Daily, Weekly, Monthly)")
+
+#     def __str__(self):
+#         return f"Forecast for {self.product.name} on {self.forecast_date}: {self.predicted_sales}"
+
 class SalesForecast(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="sales_forecasts")
-    forecast_date = models.DateField(help_text="Date for which the sales forecast applies")
-    predicted_sales = models.DecimalField(max_digits=12, decimal_places=2)
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='sales_forecasts'
+    )
+    forecast_date = models.DateField(
+        default=timezone.now,
+        help_text="Date for which the sales forecast applies"
+    )
+    predicted_sales = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        help_text="Predicted sales figure"
+    )
+    period = models.CharField(
+        max_length=20,
+        help_text="Forecast period (e.g., Daily, Weekly, Monthly)"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    period = models.CharField(max_length=20, help_text="Forecast period (e.g., Daily, Weekly, Monthly)")
 
     def __str__(self):
-        return f"Forecast for {self.product.name} on {self.forecast_date}: {self.predicted_sales}"
+        return f"{self.product.name} forecast for {self.forecast_date}: {self.predicted_sales}"
