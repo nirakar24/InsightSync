@@ -32,8 +32,8 @@ CSRF_TRUSTED_ORIGINS = [
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "8000-nirakar24-insightsync-93fw9go2tjz.ws-us117.gitpod.io",
-    os.getenv("https://8000-nirakar24-insightsync-93fw9go2tjz.ws-us117.gitpod.io", "").replace("https://", ""),
+    "8000-nirakar24-insightsync-7hfptck2fxn.ws-us118.gitpod.io",
+    os.getenv("https://8000-nirakar24-insightsync-7hfptck2fxn.ws-us118.gitpod.io", "").replace("https://", ""),
 ]
 
 # Application definition
